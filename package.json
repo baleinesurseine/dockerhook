@@ -1,0 +1,18 @@
+{
+  "name": "dockerhook",
+  "version": "1.0.0",
+  "description": "automatic deploy from docker hub",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Edouard FISCHER",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "config": "^1.21.0",
+    "express": "^4.14.0",
+    "helmet": "^2.1.2",
+    "mongoose": "^4.5.10"
+  }
+}
