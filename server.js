@@ -4,6 +4,8 @@ var bodyParser = require('body-parser')
 var config = require('config')
 var http = require('http')
 spawn = require('child_process').spawn
+var ProcessPool = require('./processPool')
+var workers = new ProcessPool(2)
 
 var scripts = {}
 
@@ -33,33 +35,36 @@ router.post('/:token', function (req, res, next) {
   console.log('>>>>>>>>>>> ' + token)
   var script = scripts[token]
   if (script) {
-    var run = spawn('sh', [script], {});
-    run.stdout.on('data', function (data) {
-      process.stdout.write('[' + token +'] ' + data);
-    });
-    run.stderr.on('data', function (data) {
-      process.stdout.write('[' + token +'] err: ' + data);
-    });
-    run.on('error', (err) => {
-      console.log('Failed to start child process: ' + script)
-    })
-    run.on('close', function (code) {
-      process.stdout.write('[' + token +'] child process exited with code ' + code + '\n');
-      if (req.payload) {
-        var options = {
-          json: true,
-          body: {state: 'success'},
-          method: 'post',
-          uri: req.payload.callback_url
-        };
-        http(options, function (err, response, body) {
-          if (err) {
-            console.error(err);
-          }
-          reply();
-        })
-      }
-      console.log('<<<<<<<<<<< ' + token + '\n')
+    workers.acquire(script, function (err, worker) {
+      worker.stdout.on('data', function (data) {
+        process.stdout.write('[' + token +'] ' + data)
+      })
+      worker.stderr.on('data', function (data) {
+        process.stdout.write('[' + token +'] err: ' + data)
+      })
+      worker.on('error', function(err) {
+        console.log('Failed to start child process: ' + script)
+        workers.release(worker)
+      })
+      worker.on('close', function(code) {
+        process.stdout.write('[' + token +'] child process exited with code ' + code + '\n')
+        if (req.payload) {
+          var options = {
+            json: true,
+            body: {state: 'success'},
+            method: 'post',
+            uri: req.payload.callback_url
+          };
+          http(options, function (err, response, body) {
+            if (err) {
+              console.error(err);
+            }
+            reply();
+          })
+        }
+        console.log('<<<<<<<<<<< ' + token + '\n')
+        workers.release(worker)
+      })
     })
   }
   return res.status(204).send()
