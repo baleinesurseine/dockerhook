@@ -5,7 +5,7 @@ var config = require('config')
 var http = require('http')
 spawn = require('child_process').spawn
 var ProcessPool = require('./processPool')
-var workers = new ProcessPool(2)
+var workers = new ProcessPool(1,10)
 
 var scripts = {}
 
@@ -30,41 +30,47 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 router.post('/:token', function (req, res, next) {
   var token = req.params.token
-  var dhm = new Date(Date.now())
-  console.log(dhm.toString())
-  console.log('>>>>>>>>>>> ' + token)
   var script = scripts[token]
   if (script) {
     workers.acquire(script, function (err, worker) {
-      worker.stdout.on('data', function (data) {
-        process.stdout.write('[' + token +'] ' + data)
-      })
-      worker.stderr.on('data', function (data) {
-        process.stdout.write('[' + token +'] err: ' + data)
-      })
-      worker.on('error', function(err) {
-        console.log('Failed to start child process: ' + script)
-        workers.release(worker)
-      })
-      worker.on('close', function(code) {
-        process.stdout.write('[' + token +'] child process exited with code ' + code + '\n')
-        if (req.payload) {
-          var options = {
-            json: true,
-            body: {state: 'success'},
-            method: 'post',
-            uri: req.payload.callback_url
-          };
-          http(options, function (err, response, body) {
-            if (err) {
-              console.error(err);
-            }
-            reply();
-          })
-        }
-        console.log('<<<<<<<<<<< ' + token + '\n')
-        workers.release(worker)
-      })
+      if (err) {
+        return res.status(500).send({error: err})
+      }
+      if (worker) {
+        var dhm = new Date(Date.now())
+        console.log(dhm.toString())
+        console.log('>>>>>>>>>>> ' + token)
+        worker.stdout.on('data', function (data) {
+          process.stdout.write('[' + token +'] ' + data)
+        })
+        worker.stderr.on('data', function (data) {
+          process.stdout.write('[' + token +'] err: ' + data)
+        })
+        worker.on('error', function(err) {
+          console.log('Failed to start child process: ' + script)
+          workers.release(worker)
+        })
+        worker.on('close', function(code) {
+          process.stdout.write('[' + token +'] child process exited with code ' + code + '\n')
+          if (req.payload) {
+            var options = {
+              json: true,
+              body: {state: 'success'},
+              method: 'post',
+              uri: req.payload.callback_url
+            };
+            console.log('sending callback response')
+            http(options, function (err, response, body) {
+              if (err) {
+                console.error(err);
+              }
+              reply();
+            })
+          }
+          console.log('<<<<<<<<<<< ' + token + '\n')
+          workers.release(worker)
+        })
+      }
     })
   }
   return res.status(204).send()
