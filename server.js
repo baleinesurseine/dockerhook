@@ -35,15 +35,12 @@ router.post('/:token', function (req, res, next) {
         return res.status(500).send({error: err})
       }
       if (worker) {
-        var dhm = new Date(Date.now())
+        var dhm = new Date()
         console.log(dhm.toString())
         console.log('>>>>>>>>>>> ' + token)
-        worker.stdout.on('data', function (data) {
-          process.stdout.write('[' + token + '] ' + data)
-        })
-        worker.stderr.on('data', function (data) {
-          process.stdout.write('[' + token + '] err: ' + data)
-        })
+        worker.stdout.pipe(process.stdout)
+        worker.stderr.pipe(process.stderr)
+
         worker.on('error', function (err) {
           console.log('Failed to start child process: ' + script + ' with error: ' + err)
           workers.release(worker)
