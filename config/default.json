@@ -1,6 +1,5 @@
 {
   "scripts": {
-    "asR155CIXDF0PSNxFB5t1ks8C3qttWq9": "./scripts/run.sh",
-    "481WshZbzjNvo6lB38hKv59X9kKq0ePf": "./scripts/images.sh"
+    "asR155CIXDF0PSNxFB5t1ks8C3qttWq9": "./scripts/runBoiler.sh"
   }
 }

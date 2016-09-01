@@ -1,7 +1,6 @@
 var express = require('express')
 var helmet = require('helmet')
 var bodyParser = require('body-parser')
-var mongoose = require('mongoose')
 var config = require('config')
 var http = require('http')
 spawn = require('child_process').spawn
@@ -22,26 +21,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 var router = express.Router()
 
-mongoose.connect('localhost')
-mongoose.connection.on('connected', function () {
-  console.log('Mongoose connection open on ' + mongoose.connection.host + ':' + mongoose.connection.port)
-})
-
-mongoose.connection.on('disconnected', function () {
-  console.log('Mongoose connection disconnected')
-})
-
-mongoose.connection.on('error', function (err) {
-  console.log('Mongoose connection error: ' + err)
-})
-
-process.on('SIGINT', function () {
-  mongoose.connection.close(function () {
-    console.log('Mongoose connection disconnected through app termination')
-    process.exit(0)
-  })
-})
-
 app.set('port', process.env.PORT || process.argv[2] || 5000)
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -49,19 +28,23 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 router.post('/:token', function (req, res, next) {
   var token = req.params.token
-  console.log(token)
+  var dhm = new Date(Date.now())
+  console.log(dhm.toString())
+  console.log('>>>>>>>>>>> ' + token)
   var script = scripts[token]
   if (script) {
-    console.log(script)
-    var run = spawn('sh', [ script ], {});
+    var run = spawn('sh', [script], {});
     run.stdout.on('data', function (data) {
-      console.log('[' + token +'] stdout: ' + data);
+      process.stdout.write('[' + token +'] ' + data);
     });
     run.stderr.on('data', function (data) {
-      console.log('[' + token +'] stderr: ' + data);
+      process.stdout.write('[' + token +'] err: ' + data);
     });
+    run.on('error', (err) => {
+      console.log('Failed to start child process: ' + script)
+    })
     run.on('close', function (code) {
-      console.log('[' + token +'] child process exited with code ' + code);
+      process.stdout.write('[' + token +'] child process exited with code ' + code + '\n');
       if (req.payload) {
         var options = {
           json: true,
@@ -69,13 +52,14 @@ router.post('/:token', function (req, res, next) {
           method: 'post',
           uri: req.payload.callback_url
         };
-        http(options, function(err, response, body) {
+        http(options, function (err, response, body) {
           if (err) {
             console.error(err);
           }
           reply();
         })
       }
+      console.log('<<<<<<<<<<< ' + token + '\n')
     })
   }
   return res.status(204).send()
