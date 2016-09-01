@@ -30,14 +30,14 @@ router.post('/:token', function (req, res, next) {
   var token = req.params.token
   var script = scripts[token]
   if (script) {
-    workers.acquire(script, function (err, worker) {
+    workers.acquire(script, function (err, worker) { // get new worker process to execute script
       if (err) {
-        return res.status(500).send({error: err})
+        return res.status(500).send({error: 'Waiting queue length exceded'})
       }
       if (worker) {
         var dhm = new Date()
-        console.log(dhm.toString())
         console.log('>>>>>>>>>>> ' + token)
+        console.log(dhm.toString())
         worker.stdout.pipe(process.stdout)
         worker.stderr.pipe(process.stderr)
 
@@ -61,7 +61,7 @@ router.post('/:token', function (req, res, next) {
               }
             })
           }
-          console.log('<<<<<<<<<<< ' + token + '\n')
+          console.log('<<<<<<<<<<< ' + token)
           workers.release(worker)
         })
       }
@@ -81,7 +81,7 @@ app.use(function (err, req, res, next) {
   if (err.status !== 404) {
     return next()
   }
-  res.status(404).send({error: err})
+  res.status(404).send('Ressource not found')
 })
 
 app.listen(app.get('port'), function () {
