@@ -37,6 +37,7 @@ router.post('/:token', function (req, res, next) {
       if (worker) {
         var dhm = new Date()
         console.log('>>>>>>>>>>> ' + token)
+        console.log('[' + token + '] spawn process')
         console.log(dhm.toString())
         worker.stdout.pipe(process.stdout)
         worker.stderr.pipe(process.stderr)
@@ -61,7 +62,7 @@ router.post('/:token', function (req, res, next) {
               }
             })
           }
-          console.log('<<<<<<<<<<< ' + token)
+          console.log('<<<<<<<<<<< ' + token + '\n')
           workers.release(worker)
         })
       }
