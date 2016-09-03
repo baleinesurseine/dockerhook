@@ -26,7 +26,7 @@ node server.js
 To run dockerhook as a daemon, it is suggested to use [forever](https://www.npmjs.com/package/forever) :
 
 ```
-forever start server.js
+forever start -l hook.log -o hook.out -e hook.err server.js
 ```
 ### configuration
 Edit `default.json` in `/config` :
