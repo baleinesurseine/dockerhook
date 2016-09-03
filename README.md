@@ -27,9 +27,9 @@ To run dockerhook as a daemon, it is suggested to use [forever](https://www.npmj
 
 ```
 forever start server.js
-``
+```
 ### configuration
-Edit `default.json` in `/config`:
+Edit `default.json` in `/config` :
 
 ```
 {
