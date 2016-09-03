@@ -30,7 +30,7 @@ router.post('/:token', function (req, res, next) {
   var token = req.params.token
   var script = scripts[token]
   if (script) {
-    workers.acquire(script, function (err, worker) { // get new worker process to execute script
+    workers.acquire('sh', [script], function (err, worker) { // get new worker process to execute script
       if (err) {
         return res.status(500).send({error: 'Waiting queue length exceded'})
       }
