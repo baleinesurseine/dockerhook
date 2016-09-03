@@ -1,7 +1,5 @@
 # Docker Hook
-
 ## What is dockerhook ?
-
 Dockerhook is a building component triggered by a docker hub webhook.
 
 The POST request is send to a `/:token` URI. The token should be kept secret.
