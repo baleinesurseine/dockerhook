@@ -38,4 +38,5 @@ CHEATSHEET.md
 
 .err
 .out
-hook
+hook.err
+hook.out
