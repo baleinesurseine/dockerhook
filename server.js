@@ -26,6 +26,7 @@ var router = express.Router()
 app.set('port', process.env.PORT || process.argv[2] || 5000)
 
 router.post('/:token', function (req, res, next) {
+  console.log('Request: ' + JSON.stringify(req.body, null, '\t'))
   var token = req.params.token
   var script = token && scripts[token]
   if (script) {
@@ -45,13 +46,13 @@ router.post('/:token', function (req, res, next) {
           workers.release(worker)
         })
         worker.on('close', function (code) {
-          process.stdout.write('[' + token + '] child process exited with code ' + code)
-          if (req.payload) {
+          process.stdout.write('[' + token + '] child process exited with code ' + code + '\n')
+          if (req.body) {
             var options = {
               json: true,
               body: {state: 'success'},
               method: 'POST',
-              url: req.payload.callback_url
+              url: req.body.callback_url
             }
             console.log('sending callback response')
             request(options, function (err, response, body) {
