@@ -5,7 +5,7 @@ class ProcessPool {
     this.poolMax = poolMax
     this.queueMax = queueMax
     this.active = [] // array of active processes
-    this.waiting = [] // array of script execution demands : {cb: callback, sc: script}
+    this.waiting = [] // array of script execution demands : {cb: callback, cm: command, arg: arguments}
   }
   acquire () { // launch and return asynchrounously new child process runing script
     let command
