@@ -18,6 +18,7 @@ if (config.has('scripts')) {
 
 var app = express()
 app.use(helmet())
+app.use(helmet.hidePoweredBy())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
