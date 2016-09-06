@@ -5,6 +5,11 @@ var config = require('config')
 var request = require('request')
 var ProcessPool = require('./processPool')
 var workers = new ProcessPool(1, process.env.WQUEUE || 10)
+var fs = require('fs')
+var path = require('path')
+
+var logfile = fs.createWriteStream('./logfile.txt', { flags: 'a' })
+process.stdout.write = process.stderr.write = logfile.write.bind(logfile)
 
 var scripts = {}
 
@@ -26,6 +31,14 @@ if (!config.has('scripts')) {
   var router = express.Router()
 
   app.set('port', process.env.PORT || process.argv[2] || 5000)
+
+  router.get('/:token', function (req, res) {
+    var token = req.params.token
+    var script = token && scripts[token]
+    if (script) {
+      res.sendFile(path.join(__dirname, './logfile.txt'))
+    }
+  })
 
   router.post('/:token', function (req, res, next) {
     if (req.body) { console.log('Request: ' + JSON.stringify(req.body, null, 2)) }
