@@ -1,4 +1,5 @@
 # Docker Hook
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](http://standardjs.com)
 ## What is dockerhook ?
 Dockerhook is a building component triggered by a docker hub webhook.
 
